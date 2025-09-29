@@ -22,6 +22,10 @@ let eyeCountdown;       // Seconds until next eye rest
 let postureCountdown;   // Seconds until next posture check
 let workCountdown;      // Seconds until work break
 
+// Overlay queue system
+let overlayQueue = [];  // Queue of pending overlays
+let isShowingOverlay = false; // Is an overlay currently showing?
+
 // Settings file path
 const settingsPath = path.join(app.getPath('userData'), 'settings.json');
 
@@ -40,10 +44,15 @@ let settings = {
 // Load saved settings
 loadSettings();
 
-// Initialize countdowns
+// Initialize countdowns with staggered timing
 eyeCountdown = settings.eyeRestInterval * 60;
 postureCountdown = settings.postureInterval * 60;
 workCountdown = settings.workInterval > 0 ? settings.workInterval * 60 : 0;
+
+// Add 30 second offset to posture to prevent simultaneous triggers
+if (postureCountdown > 0) {
+  postureCountdown += 30;
+}
 
 // ============================================================================
 // SETTINGS PERSISTENCE
@@ -126,10 +135,14 @@ function createSettingsWindow() {
  * @param {number} duration - How long to show overlay (seconds)
  */
 function createOverlayWindow(type, duration) {
-  // Close existing overlay if any
-  if (overlayWindow && !overlayWindow.isDestroyed()) {
-    overlayWindow.close();
+  // Prevent multiple overlays at once
+  if (isShowingOverlay || overlayWindow) {
+    console.log(`⏳ Overlay already showing, added ${type} to queue`);
+    overlayQueue.push({ type, duration });
+    return;
   }
+
+  isShowingOverlay = true;
 
   // Get primary display size
   const primaryDisplay = screen.getPrimaryDisplay();
@@ -146,6 +159,7 @@ function createOverlayWindow(type, duration) {
     skipTaskbar: true,
     resizable: false,
     hasShadow: false,
+    show: false, // Don't show immediately
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
@@ -165,11 +179,51 @@ function createOverlayWindow(type, duration) {
   // Send countdown duration to overlay
   overlayWindow.webContents.on('did-finish-load', () => {
     overlayWindow.webContents.send('start-countdown', duration);
+    
+    // Smooth fade-in: show after a short delay
+    setTimeout(() => {
+      if (overlayWindow && !overlayWindow.isDestroyed()) {
+        overlayWindow.show();
+        overlayWindow.setOpacity(0);
+        
+        // Fade in animation
+        let opacity = 0;
+        const fadeIn = setInterval(() => {
+          opacity += 0.1;
+          if (opacity >= 1) {
+            opacity = 1;
+            clearInterval(fadeIn);
+          }
+          if (overlayWindow && !overlayWindow.isDestroyed()) {
+            overlayWindow.setOpacity(opacity);
+          }
+        }, 30);
+      }
+    }, 100);
   });
 
   overlayWindow.on('closed', () => {
     overlayWindow = null;
+    isShowingOverlay = false;
+    
+    // Check if there are queued overlays
+    processOverlayQueue();
   });
+}
+
+/**
+ * Process queued overlays
+ */
+function processOverlayQueue() {
+  if (overlayQueue.length > 0 && !isShowingOverlay) {
+    console.log(`📋 Processing overlay queue (${overlayQueue.length} items)`);
+    const next = overlayQueue.shift();
+    
+    // Small delay before showing next overlay
+    setTimeout(() => {
+      createOverlayWindow(next.type, next.duration);
+    }, 500);
+  }
 }
 
 // ============================================================================
@@ -285,7 +339,10 @@ function updateTrayTitle() {
  */
 function startMainTimer() {
   setInterval(() => {
-    if (!isRunning || overlayWindow) return;
+    if (!isRunning) return; // Don't count if paused
+    
+    // Only countdown when no overlay is showing
+    if (overlayWindow) return;
 
     // Eye rest countdown
     eyeCountdown--;
@@ -409,7 +466,21 @@ ipcMain.on('toggle-timer', () => {
  */
 ipcMain.on('close-overlay', () => {
   if (overlayWindow && !overlayWindow.isDestroyed()) {
-    overlayWindow.close();
+    // Fade out before closing
+    let opacity = 1;
+    const fadeOut = setInterval(() => {
+      opacity -= 0.15;
+      if (opacity <= 0) {
+        opacity = 0;
+        clearInterval(fadeOut);
+        if (overlayWindow && !overlayWindow.isDestroyed()) {
+          overlayWindow.close();
+        }
+      }
+      if (overlayWindow && !overlayWindow.isDestroyed()) {
+        overlayWindow.setOpacity(opacity);
+      }
+    }, 20);
   }
 });
 
