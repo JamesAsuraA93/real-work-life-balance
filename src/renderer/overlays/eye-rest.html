@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eye Rest</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: white;
+      overflow: hidden;
+      cursor: default;
+      user-select: none;
+    }
+
+    .container {
+      text-align: center;
+      z-index: 10;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    /* ============================================
+       ANIMATED EYE ICON
+       ============================================ */
+    .eye-container {
+      width: 220px;
+      height: 220px;
+      margin: 0 auto 50px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .eye {
+      width: 150px;
+      height: 85px;
+      background: white;
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s ease;
+    }
+
+    .eye.blink {
+      transform: scaleY(0.1);
+    }
+
+    .iris {
+      width: 65px;
+      height: 65px;
+      background: radial-gradient(circle at 35% 35%, #6dd5fa, #2980b9, #1a5276);
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .pupil {
+      width: 32px;
+      height: 32px;
+      background: #000;
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .highlight {
+      width: 12px;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
+      position: absolute;
+      top: 25%;
+      left: 30%;
+    }
+
+    /* Glow effect */
+    .glow {
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      filter: blur(80px);
+      animation: pulse 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.4;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.7;
+        transform: scale(1.15);
+      }
+    }
+
+    /* ============================================
+       TEXT CONTENT
+       ============================================ */
+    h1 {
+      font-size: 62px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      font-size: 30px;
+      margin-bottom: 50px;
+      opacity: 0.95;
+      font-weight: 400;
+    }
+
+    /* ============================================
+       COUNTDOWN
+       ============================================ */
+    .countdown {
+      font-size: 140px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-shadow: 0 6px 32px rgba(0, 0, 0, 0.3);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      letter-spacing: -3px;
+    }
+
+    .countdown-label {
+      font-size: 22px;
+      opacity: 0.85;
+      margin-bottom: 50px;
+      font-weight: 500;
+    }
+
+    /* ============================================
+       SKIP BUTTON
+       ============================================ */
+    .skip-btn {
+      padding: 18px 48px;
+      font-size: 20px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-radius: 50px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      font-family: inherit;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .skip-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .skip-btn:active {
+      transform: translateY(0);
+    }
+
+    /* ============================================
+       TIPS
+       ============================================ */
+    .tips {
+      position: absolute;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      opacity: 0.7;
+      font-size: 16px;
+    }
+
+    .tips strong {
+      font-weight: 600;
+      opacity: 1;
+    }
+
+    /* ============================================
+       ANIMATIONS
+       ============================================ */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* ============================================
+       BACKGROUND DECORATION
+       ============================================ */
+    .bg-circle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.1;
+    }
+
+    .bg-circle-1 {
+      width: 400px;
+      height: 400px;
+      background: white;
+      top: -100px;
+      right: -100px;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .bg-circle-2 {
+      width: 300px;
+      height: 300px;
+      background: white;
+      bottom: -80px;
+      left: -80px;
+      animation: float 6s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-30px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Background decoration -->
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+  <div class="glow"></div>
+  
+  <div class="container">
+    <!-- Animated Eye -->
+    <div class="eye-container">
+      <div class="eye" id="eye">
+        <div class="iris">
+          <div class="pupil">
+            <div class="highlight"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <h1>Time to Rest Your Eyes</h1>
+    <p class="subtitle">Look at something 20 feet away</p>
+
+    <!-- Countdown -->
+    <div class="countdown" id="countdown">30</div>
+    <div class="countdown-label">seconds remaining</div>
+
+    <!-- Skip Button -->
+    <button class="skip-btn" onclick="skipBreak()">Skip Break</button>
+  </div>
+
+  <!-- Tips -->
+  <div class="tips">
+    <strong>20-20-20 Rule:</strong> Every 20 minutes, look at something 20 feet away for 20 seconds
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    const eye = document.getElementById('eye');
+    const countdownEl = document.getElementById('countdown');
+    
+    let countdown = 30;
+    let countdownInterval;
+
+    // ============================================
+    // RECEIVE COUNTDOWN DURATION FROM MAIN PROCESS
+    // ============================================
+    
+    ipcRenderer.on('start-countdown', (event, duration) => {
+      countdown = duration;
+      countdownEl.textContent = countdown;
+      startCountdown();
+    });
+
+    // ============================================
+    // COUNTDOWN LOGIC
+    // ============================================
+
+    function startCountdown() {
+      countdownInterval = setInterval(() => {
+        countdown--;
+        countdownEl.textContent = countdown;
+
+        // Add urgency animation when countdown is low
+        if (countdown <= 5) {
+          countdownEl.style.animation = 'pulse 0.5s ease-in-out infinite';
+        }
+
+        // Auto-close when done
+        if (countdown <= 0) {
+          clearInterval(countdownInterval);
+          ipcRenderer.send('close-overlay');
+        }
+      }, 1000);
+    }
+
+    // ============================================
+    // EYE BLINKING ANIMATION
+    // ============================================
+
+    function startBlinking() {
+      setInterval(() => {
+        eye.classList.add('blink');
+        setTimeout(() => {
+          eye.classList.remove('blink');
+        }, 150);
+      }, 3000); // Blink every 3 seconds
+    }
+
+    // ============================================
+    // USER ACTIONS
+    // ============================================
+
+    function skipBreak() {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
+      ipcRenderer.send('close-overlay');
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        skipBreak();
+      }
+    });
+
+    // ============================================
+    // SOUND NOTIFICATION
+    // ============================================
+
+    function playSound() {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+      } catch (e) {
+        console.log('Audio not available');
+      }
+    }
+
+    // ============================================
+    // INITIALIZE
+    // ============================================
+
+    // Start blinking animation
+    startBlinking();
+    
+    // Play sound on load
+    playSound();
+  </script>
+</body>
+</html>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Posture Check</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: white;
+      overflow: hidden;
+      cursor: default;
+      user-select: none;
+    }
+
+    .container {
+      text-align: center;
+      z-index: 10;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    /* ============================================
+       ANIMATED POSTURE ICON
+       ============================================ */
+    .posture-container {
+      width: 220px;
+      height: 220px;
+      margin: 0 auto 50px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: wiggle 0.6s ease-in-out infinite;
+    }
+
+    @keyframes wiggle {
+      0%, 100% {
+        transform: rotate(-3deg);
+      }
+      50% {
+        transform: rotate(3deg);
+      }
+    }
+
+    .person {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .head {
+      width: 54px;
+      height: 54px;
+      background: white;
+      border-radius: 50%;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .body {
+      width: 65px;
+      height: 95px;
+      background: white;
+      border-radius: 32px;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Arrow pointing up */
+    .arrow {
+      position: absolute;
+      top: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: bounce 1s ease-in-out infinite;
+    }
+
+    .arrow svg {
+      width: 48px;
+      height: 48px;
+      fill: white;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateX(-50%) translateY(0);
+      }
+      50% {
+        transform: translateX(-50%) translateY(-12px);
+      }
+    }
+
+    /* Glow effect */
+    .glow {
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      filter: blur(80px);
+      animation: pulse 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.4;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.7;
+        transform: scale(1.15);
+      }
+    }
+
+    /* ============================================
+       TEXT CONTENT
+       ============================================ */
+    h1 {
+      font-size: 62px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      font-size: 28px;
+      margin-bottom: 50px;
+      opacity: 0.95;
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    .bullet {
+      display: inline-block;
+      margin: 0 12px;
+      opacity: 0.6;
+    }
+
+    /* ============================================
+       COUNTDOWN
+       ============================================ */
+    .countdown {
+      font-size: 140px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-shadow: 0 6px 32px rgba(0, 0, 0, 0.3);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      letter-spacing: -3px;
+    }
+
+    .countdown-label {
+      font-size: 22px;
+      opacity: 0.85;
+      margin-bottom: 50px;
+      font-weight: 500;
+    }
+
+    /* ============================================
+       READY BUTTON
+       ============================================ */
+    .ready-btn {
+      padding: 18px 48px;
+      font-size: 20px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-radius: 50px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      font-family: inherit;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .ready-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .ready-btn:active {
+      transform: translateY(0);
+    }
+
+    /* ============================================
+       CHECKLIST
+       ============================================ */
+    .checklist {
+      position: absolute;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: left;
+      opacity: 0.8;
+      font-size: 18px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 24px 36px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    .checklist-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .check-icon {
+      width: 24px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    /* ============================================
+       ANIMATIONS
+       ============================================ */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* ============================================
+       BACKGROUND DECORATION
+       ============================================ */
+    .bg-circle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.1;
+    }
+
+    .bg-circle-1 {
+      width: 400px;
+      height: 400px;
+      background: white;
+      top: -100px;
+      left: -100px;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .bg-circle-2 {
+      width: 300px;
+      height: 300px;
+      background: white;
+      bottom: -80px;
+      right: -80px;
+      animation: float 6s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-30px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Background decoration -->
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+  <div class="glow"></div>
+  
+  <div class="container">
+    <!-- Animated Posture Icon -->
+    <div class="posture-container">
+      <div class="person">
+        <div class="arrow">
+          <svg viewBox="0 0 24 24">
+            <path d="M7 14l5-5 5 5z"/>
+          </svg>
+        </div>
+        <div class="head"></div>
+        <div class="body"></div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <h1>Check Your Posture!</h1>
+    <p class="subtitle">
+      Sit up straight <span class="bullet">•</span> Shoulders back <span class="bullet">•</span> Feet flat
+    </p>
+
+    <!-- Countdown -->
+    <div class="countdown" id="countdown">10</div>
+    <div class="countdown-label">seconds remaining</div>
+
+    <!-- Ready Button -->
+    <button class="ready-btn" onclick="closeReminder()">I'm Ready</button>
+  </div>
+
+  <!-- Checklist -->
+  <div class="checklist">
+    <div class="checklist-item">
+      <span class="check-icon">✓</span>
+      <span>Back straight against chair</span>
+    </div>
+    <div class="checklist-item">
+      <span class="check-icon">✓</span>
+      <span>Shoulders relaxed, not hunched</span>
+    </div>
+    <div class="checklist-item">
+      <span class="check-icon">✓</span>
+      <span>Feet flat on the floor</span>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    const countdownEl = document.getElementById('countdown');
+    
+    let countdown = 10;
+    let countdownInterval;
+
+    // ============================================
+    // RECEIVE COUNTDOWN DURATION FROM MAIN PROCESS
+    // ============================================
+    
+    ipcRenderer.on('start-countdown', (event, duration) => {
+      countdown = duration;
+      countdownEl.textContent = countdown;
+      startCountdown();
+    });
+
+    // ============================================
+    // COUNTDOWN LOGIC
+    // ============================================
+
+    function startCountdown() {
+      countdownInterval = setInterval(() => {
+        countdown--;
+        countdownEl.textContent = countdown;
+
+        // Add urgency animation when countdown is low
+        if (countdown <= 3) {
+          countdownEl.style.animation = 'pulse 0.5s ease-in-out infinite';
+        }
+
+        // Auto-close when done
+        if (countdown <= 0) {
+          clearInterval(countdownInterval);
+          ipcRenderer.send('close-overlay');
+        }
+      }, 1000);
+    }
+
+    // ============================================
+    // USER ACTIONS
+    // ============================================
+
+    function closeReminder() {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
+      ipcRenderer.send('close-overlay');
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeReminder();
+      }
+    });
+
+    // ============================================
+    // SOUND NOTIFICATION
+    // ============================================
+
+    function playSound() {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+      } catch (e) {
+        console.log('Audio not available');
+      }
+    }
+
+    // ============================================
+    // INITIALIZE
+    // ============================================
+
+    // Play sound on load
+    playSound();
+  </script>
+</body>
+</html>
