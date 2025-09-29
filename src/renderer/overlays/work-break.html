@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Posture Check</title>
+  <title>Work Break</title>
   <style>
     * {
       margin: 0;
@@ -13,7 +13,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-      background: rgba(240, 147, 251, 0.95);
+      background: rgba(102, 126, 234, 0.95);
       backdrop-filter: blur(40px);
       -webkit-backdrop-filter: blur(40px);
       display: flex;
@@ -27,14 +27,13 @@
       user-select: none;
     }
 
-    /* Blur overlay background */
     .blur-bg {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, rgba(240, 147, 251, 0.85) 0%, rgba(245, 87, 108, 0.85) 100%);
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.85) 0%, rgba(118, 75, 162, 0.85) 100%);
       backdrop-filter: blur(30px);
       -webkit-backdrop-filter: blur(30px);
       z-index: 1;
@@ -47,7 +46,7 @@
       animation: fadeIn 0.4s ease-out;
     }
 
-    .posture-container {
+    .icon-container {
       width: 220px;
       height: 220px;
       margin: 0 auto 50px;
@@ -59,64 +58,19 @@
       position: relative;
       backdrop-filter: blur(10px);
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      animation: wiggle 0.6s ease-in-out infinite;
+      animation: pulse 2s ease-in-out infinite;
     }
 
-    @keyframes wiggle {
+    .coffee-icon {
+      font-size: 90px;
+    }
+
+    @keyframes pulse {
       0%, 100% {
-        transform: rotate(-3deg);
+        transform: scale(1);
       }
       50% {
-        transform: rotate(3deg);
-      }
-    }
-
-    .person {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-    }
-
-    .head {
-      width: 54px;
-      height: 54px;
-      background: white;
-      border-radius: 50%;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .body {
-      width: 65px;
-      height: 95px;
-      background: white;
-      border-radius: 32px;
-      position: relative;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .arrow {
-      position: absolute;
-      top: -50px;
-      left: 50%;
-      transform: translateX(-50%);
-      animation: bounce 1s ease-in-out infinite;
-    }
-
-    .arrow svg {
-      width: 48px;
-      height: 48px;
-      fill: white;
-      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-    }
-
-    @keyframes bounce {
-      0%, 100% {
-        transform: translateX(-50%) translateY(0);
-      }
-      50% {
-        transform: translateX(-50%) translateY(-12px);
+        transform: scale(1.05);
       }
     }
 
@@ -133,13 +87,7 @@
       margin-bottom: 50px;
       opacity: 0.95;
       font-weight: 400;
-      line-height: 1.4;
-    }
-
-    .bullet {
-      display: inline-block;
-      margin: 0 12px;
-      opacity: 0.6;
+      line-height: 1.5;
     }
 
     .countdown {
@@ -159,7 +107,7 @@
       font-weight: 500;
     }
 
-    .ready-btn {
+    .skip-btn {
       padding: 18px 48px;
       font-size: 20px;
       font-weight: 600;
@@ -174,53 +122,34 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     }
 
-    .ready-btn:hover {
+    .skip-btn:hover {
       background: rgba(255, 255, 255, 0.35);
       transform: translateY(-2px);
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
     }
 
-    .ready-btn:active {
+    .skip-btn:active {
       transform: translateY(0);
     }
 
-    .checklist {
+    .suggestions {
       position: absolute;
       bottom: 60px;
       left: 50%;
       transform: translateX(-50%);
-      text-align: left;
-      opacity: 0.9;
+      text-align: center;
+      opacity: 0.85;
       font-size: 18px;
       background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(20px);
-      padding: 24px 36px;
+      padding: 24px 40px;
       border-radius: 20px;
       border: 1px solid rgba(255, 255, 255, 0.25);
       z-index: 10;
     }
 
-    .checklist-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-      font-weight: 500;
-    }
-
-    .checklist-item:last-child {
-      margin-bottom: 0;
-    }
-
-    .check-icon {
-      width: 24px;
-      height: 24px;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
+    .suggestion-item {
+      margin: 8px 0;
     }
 
     @keyframes fadeIn {
@@ -234,7 +163,6 @@
       }
     }
 
-    /* Close button */
     .close-btn {
       position: fixed;
       top: 30px;
@@ -265,53 +193,36 @@
 <body>
   <div class="blur-bg"></div>
   
-  <!-- Close button -->
-  <button class="close-btn" onclick="closeReminder()">✕</button>
+  <button class="close-btn" onclick="skipBreak()">✕</button>
   
   <div class="container">
-    <div class="posture-container">
-      <div class="person">
-        <div class="arrow">
-          <svg viewBox="0 0 24 24">
-            <path d="M7 14l5-5 5 5z"/>
-          </svg>
-        </div>
-        <div class="head"></div>
-        <div class="body"></div>
-      </div>
+    <div class="icon-container">
+      <div class="coffee-icon">☕</div>
     </div>
 
-    <h1>Check Your Posture!</h1>
+    <h1>Time for a Break!</h1>
     <p class="subtitle">
-      Sit up straight <span class="bullet">•</span> Shoulders back <span class="bullet">•</span> Feet flat
+      Step away from your work.<br>Stretch, hydrate, breathe.
     </p>
 
-    <div class="countdown" id="countdown">10</div>
+    <div class="countdown" id="countdown">60</div>
     <div class="countdown-label">seconds remaining</div>
 
-    <button class="ready-btn" onclick="closeReminder()">I'm Ready</button>
+    <button class="skip-btn" onclick="skipBreak()">Skip Break</button>
   </div>
 
-  <div class="checklist">
-    <div class="checklist-item">
-      <span class="check-icon">✓</span>
-      <span>Back straight against chair</span>
-    </div>
-    <div class="checklist-item">
-      <span class="check-icon">✓</span>
-      <span>Shoulders relaxed, not hunched</span>
-    </div>
-    <div class="checklist-item">
-      <span class="check-icon">✓</span>
-      <span>Feet flat on the floor</span>
-    </div>
+  <div class="suggestions">
+    <strong>💡 Break Ideas:</strong>
+    <div class="suggestion-item">🚶 Take a short walk</div>
+    <div class="suggestion-item">💧 Drink some water</div>
+    <div class="suggestion-item">🧘 Do some stretches</div>
   </div>
 
   <script>
     const { ipcRenderer } = require('electron');
     const countdownEl = document.getElementById('countdown');
     
-    let countdown = 10;
+    let countdown = 60;
     let countdownInterval;
 
     ipcRenderer.on('start-countdown', (event, duration) => {
@@ -325,18 +236,18 @@
         countdown--;
         countdownEl.textContent = countdown;
 
-        if (countdown <= 3) {
+        if (countdown <= 5) {
           countdownEl.style.animation = 'pulse 0.5s ease-in-out infinite';
         }
 
         if (countdown <= 0) {
           clearInterval(countdownInterval);
-          closeReminder();
+          skipBreak();
         }
       }, 1000);
     }
 
-    function closeReminder() {
+    function skipBreak() {
       if (countdownInterval) {
         clearInterval(countdownInterval);
       }
@@ -345,7 +256,7 @@
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        closeReminder();
+        skipBreak();
       }
     });
 

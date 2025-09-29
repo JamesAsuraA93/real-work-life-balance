@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LookAway - Settings</title>
   <style>
-    /* ============================================
-       RESET & BASE STYLES
-       ============================================ */
     * {
       margin: 0;
       padding: 0;
@@ -24,18 +21,12 @@
       user-select: none;
     }
 
-    /* ============================================
-       LAYOUT
-       ============================================ */
     .container {
       max-width: 800px;
       margin: 0 auto;
       padding: 60px 40px 40px;
     }
 
-    /* ============================================
-       HEADER
-       ============================================ */
     .header {
       text-align: center;
       margin-bottom: 50px;
@@ -68,9 +59,6 @@
       font-weight: 400;
     }
 
-    /* ============================================
-       CARDS
-       ============================================ */
     .card {
       background: rgba(255, 255, 255, 0.12);
       backdrop-filter: blur(20px);
@@ -87,9 +75,6 @@
       transform: translateY(-2px);
     }
 
-    /* ============================================
-       STATUS SECTION
-       ============================================ */
     .status-header {
       display: flex;
       justify-content: space-between;
@@ -127,9 +112,6 @@
       animation: none;
     }
 
-    /* ============================================
-       BUTTONS
-       ============================================ */
     .btn-group {
       display: flex;
       gap: 12px;
@@ -171,12 +153,9 @@
       background: rgba(255, 255, 255, 0.25);
     }
 
-    /* ============================================
-       COUNTDOWN GRID
-       ============================================ */
     .countdown-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 20px;
       margin-top: 24px;
     }
@@ -205,9 +184,6 @@
       letter-spacing: -1px;
     }
 
-    /* ============================================
-       SETTINGS SECTIONS
-       ============================================ */
     .settings-section {
       margin-top: 32px;
     }
@@ -270,11 +246,6 @@
       box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
     }
 
-    input[type="number"]::placeholder {
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    /* Remove spinner buttons */
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button {
       -webkit-appearance: none;
@@ -291,9 +262,6 @@
       pointer-events: none;
     }
 
-    /* ============================================
-       TOGGLE SWITCH
-       ============================================ */
     .toggle-row {
       display: flex;
       justify-content: space-between;
@@ -336,9 +304,35 @@
       transform: translateX(24px);
     }
 
-    /* ============================================
-       FOOTER
-       ============================================ */
+    .save-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 32px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(74, 222, 128, 0.4);
+      font-family: inherit;
+    }
+
+    .save-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(74, 222, 128, 0.6);
+    }
+
+    .save-btn:active {
+      transform: translateY(0);
+    }
+
+    .save-btn.saved {
+      background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+    }
+
     .footer {
       text-align: center;
       margin-top: 40px;
@@ -348,9 +342,35 @@
       font-size: 14px;
     }
 
-    /* ============================================
-       ANIMATIONS
-       ============================================ */
+    .minimize-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 24px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 1000;
+    }
+
+    .minimize-btn:hover {
+      background: rgba(0, 0, 0, 0.5);
+      transform: scale(1.05);
+    }
+
+    .help-text {
+      font-size: 13px;
+      opacity: 0.7;
+      margin-top: 8px;
+      font-style: italic;
+    }
+
     @keyframes fadeInDown {
       from {
         opacity: 0;
@@ -381,39 +401,12 @@
         opacity: 0.5;
       }
     }
-
-    /* ============================================
-       MINIMIZE BUTTON
-       ============================================ */
-    .minimize-btn {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 10px 24px;
-      background: rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 10px;
-      color: white;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      z-index: 1000;
-    }
-
-    .minimize-btn:hover {
-      background: rgba(0, 0, 0, 0.5);
-      transform: scale(1.05);
-    }
   </style>
 </head>
 <body>
-  <!-- Minimize Button -->
   <button class="minimize-btn" onclick="minimizeToTray()">Minimize to Tray</button>
 
   <div class="container">
-    <!-- Header -->
     <div class="header">
       <div class="app-icon">👁️</div>
       <h1>LookAway</h1>
@@ -445,6 +438,10 @@
           <div class="countdown-label">Next Posture Check</div>
           <div class="countdown-time" id="postureCountdown">10:00</div>
         </div>
+        <div class="countdown-card" id="workCard" style="display: none;">
+          <div class="countdown-label">Work Focus Time</div>
+          <div class="countdown-time" id="workCountdown">0:00</div>
+        </div>
       </div>
     </div>
 
@@ -461,14 +458,7 @@
           <div class="setting-field">
             <label class="setting-label">Show every</label>
             <div class="input-wrapper">
-              <input 
-                type="number" 
-                id="eyeInterval" 
-                value="60" 
-                min="1" 
-                max="120"
-                onchange="updateSettings()"
-              >
+              <input type="number" id="eyeInterval" value="60" min="1" max="120">
               <span class="input-unit">minutes</span>
             </div>
           </div>
@@ -476,14 +466,7 @@
           <div class="setting-field">
             <label class="setting-label">Duration</label>
             <div class="input-wrapper">
-              <input 
-                type="number" 
-                id="eyeDuration" 
-                value="30" 
-                min="10" 
-                max="300"
-                onchange="updateSettings()"
-              >
+              <input type="number" id="eyeDuration" value="30" min="10" max="300">
               <span class="input-unit">seconds</span>
             </div>
           </div>
@@ -499,14 +482,7 @@
           <div class="setting-field">
             <label class="setting-label">Show every</label>
             <div class="input-wrapper">
-              <input 
-                type="number" 
-                id="postureInterval" 
-                value="10" 
-                min="1" 
-                max="60"
-                onchange="updateSettings()"
-              >
+              <input type="number" id="postureInterval" value="10" min="1" max="60">
               <span class="input-unit">minutes</span>
             </div>
           </div>
@@ -514,16 +490,39 @@
           <div class="setting-field">
             <label class="setting-label">Duration</label>
             <div class="input-wrapper">
-              <input 
-                type="number" 
-                id="postureDuration" 
-                value="10" 
-                min="5" 
-                max="60"
-                onchange="updateSettings()"
-              >
+              <input type="number" id="postureDuration" value="10" min="5" max="60">
               <span class="input-unit">seconds</span>
             </div>
+          </div>
+        </div>
+
+        <!-- Work Focus Settings -->
+        <div class="section-header" style="margin-top: 32px;">
+          <span class="section-icon">⏱️</span>
+          <h3 class="section-title">Work Focus Timer</h3>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-field">
+            <label class="setting-label">Work duration (0 = disabled)</label>
+            <div class="input-wrapper">
+              <input type="number" id="workInterval" value="0" min="0" max="240">
+              <span class="input-unit">minutes</span>
+            </div>
+            <p class="help-text">Set to 0 to disable work timer</p>
+          </div>
+
+          <div class="setting-field">
+            <label class="setting-label">Break time</label>
+            <div class="input-wrapper">
+              <input type="number" id="workBreakMin" value="30" min="10" max="300">
+              <span class="input-unit">to</span>
+            </div>
+            <div class="input-wrapper" style="margin-top: 10px;">
+              <input type="number" id="workBreakMax" value="300" min="30" max="600">
+              <span class="input-unit">seconds</span>
+            </div>
+            <p class="help-text">Random break between min-max seconds</p>
           </div>
         </div>
 
@@ -534,6 +533,9 @@
             <div class="toggle-slider"></div>
           </div>
         </div>
+
+        <!-- Save Button -->
+        <button class="save-btn" id="saveBtn" onclick="saveSettings()">💾 Save Changes</button>
       </div>
     </div>
 
@@ -545,24 +547,72 @@
   </div>
 
   <script>
-    // Require Electron IPC for communication with main process
     const { ipcRenderer } = require('electron');
 
     let isRunning = true;
     let soundEnabled = true;
 
     // ============================================
-    // RECEIVE UPDATES FROM MAIN PROCESS
+    // LOAD SAVED SETTINGS
+    // ============================================
+    
+    ipcRenderer.on('load-settings', (event, settings) => {
+      console.log('Loading settings:', settings);
+      
+      // Populate fields with saved settings
+      document.getElementById('eyeInterval').value = settings.eyeRestInterval;
+      document.getElementById('eyeDuration').value = settings.eyeRestDuration;
+      document.getElementById('postureInterval').value = settings.postureInterval;
+      document.getElementById('postureDuration').value = settings.postureDuration;
+      document.getElementById('workInterval').value = settings.workInterval;
+      document.getElementById('workBreakMin').value = settings.workBreakMin;
+      document.getElementById('workBreakMax').value = settings.workBreakMax;
+      
+      soundEnabled = settings.soundEnabled;
+      const toggle = document.getElementById('soundToggle');
+      if (soundEnabled) {
+        toggle.classList.add('active');
+      } else {
+        toggle.classList.remove('active');
+      }
+
+      // Show/hide work card
+      updateWorkCardVisibility();
+    });
+
+    // ============================================
+    // RECEIVE TIMER UPDATES
     // ============================================
     
     ipcRenderer.on('timer-update', (event, data) => {
-      // Update countdown displays
       document.getElementById('eyeCountdown').textContent = formatTime(data.eye);
       document.getElementById('postureCountdown').textContent = formatTime(data.posture);
       
-      // Update status
+      if (data.work > 0) {
+        document.getElementById('workCountdown').textContent = formatTime(data.work);
+      }
+      
       isRunning = data.isRunning;
       updateStatusUI();
+    });
+
+    // ============================================
+    // SETTINGS SAVED CONFIRMATION
+    // ============================================
+
+    ipcRenderer.on('settings-saved', (event, success) => {
+      if (success) {
+        const btn = document.getElementById('saveBtn');
+        btn.textContent = '✅ Saved!';
+        btn.classList.add('saved');
+        
+        setTimeout(() => {
+          btn.textContent = '💾 Save Changes';
+          btn.classList.remove('saved');
+        }, 2000);
+
+        updateWorkCardVisibility();
+      }
     });
 
     // ============================================
@@ -588,6 +638,17 @@
       }
     }
 
+    function updateWorkCardVisibility() {
+      const workInterval = parseInt(document.getElementById('workInterval').value);
+      const workCard = document.getElementById('workCard');
+      
+      if (workInterval > 0) {
+        workCard.style.display = 'block';
+      } else {
+        workCard.style.display = 'none';
+      }
+    }
+
     function formatTime(seconds) {
       const mins = Math.floor(seconds / 60);
       const secs = seconds % 60;
@@ -608,16 +669,19 @@
       ipcRenderer.send('reset-timers');
     }
 
-    function updateSettings() {
+    function saveSettings() {
       const settings = {
         eyeRestInterval: parseInt(document.getElementById('eyeInterval').value),
         eyeRestDuration: parseInt(document.getElementById('eyeDuration').value),
         postureInterval: parseInt(document.getElementById('postureInterval').value),
         postureDuration: parseInt(document.getElementById('postureDuration').value),
+        workInterval: parseInt(document.getElementById('workInterval').value),
+        workBreakMin: parseInt(document.getElementById('workBreakMin').value),
+        workBreakMax: parseInt(document.getElementById('workBreakMax').value),
         soundEnabled: soundEnabled
       };
       
-      ipcRenderer.send('update-settings', settings);
+      ipcRenderer.send('save-settings', settings);
     }
 
     function toggleSound() {
@@ -629,8 +693,6 @@
       } else {
         toggle.classList.remove('active');
       }
-      
-      updateSettings();
     }
 
     function minimizeToTray() {
@@ -641,8 +703,10 @@
     // INITIALIZE
     // ============================================
 
-    // Show countdown grid on load
     document.getElementById('countdownGrid').style.display = 'grid';
+    
+    // Update work card visibility when interval changes
+    document.getElementById('workInterval').addEventListener('input', updateWorkCardVisibility);
   </script>
 </body>
 </html>

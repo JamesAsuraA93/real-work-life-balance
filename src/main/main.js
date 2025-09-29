@@ -3,8 +3,9 @@
  * This is the "brain" of the app that controls everything
  */
 
-const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 // ============================================================================
 // GLOBAL VARIABLES
@@ -19,19 +20,62 @@ let isQuitting = false; // Flag to check if app is quitting
 let isRunning = true;   // Is timer active?
 let eyeCountdown;       // Seconds until next eye rest
 let postureCountdown;   // Seconds until next posture check
+let workCountdown;      // Seconds until work break
 
-// User settings (default values)
+// Settings file path
+const settingsPath = path.join(app.getPath('userData'), 'settings.json');
+
+// Default settings
 let settings = {
   eyeRestInterval: 60,    // Show eye rest every 60 minutes
   eyeRestDuration: 30,    // Eye rest lasts 30 seconds
   postureInterval: 10,    // Show posture reminder every 10 minutes
   postureDuration: 10,    // Posture reminder lasts 10 seconds
+  workInterval: 0,        // Work focus time (0 = disabled)
+  workBreakMin: 30,       // Minimum break time (seconds)
+  workBreakMax: 300,      // Maximum break time (seconds)
   soundEnabled: true      // Play sound notifications
 };
+
+// Load saved settings
+loadSettings();
 
 // Initialize countdowns
 eyeCountdown = settings.eyeRestInterval * 60;
 postureCountdown = settings.postureInterval * 60;
+workCountdown = settings.workInterval > 0 ? settings.workInterval * 60 : 0;
+
+// ============================================================================
+// SETTINGS PERSISTENCE
+// ============================================================================
+
+/**
+ * Load settings from file
+ */
+function loadSettings() {
+  try {
+    if (fs.existsSync(settingsPath)) {
+      const data = fs.readFileSync(settingsPath, 'utf8');
+      const savedSettings = JSON.parse(data);
+      settings = { ...settings, ...savedSettings };
+      console.log('✅ Settings loaded:', settings);
+    }
+  } catch (error) {
+    console.error('❌ Error loading settings:', error);
+  }
+}
+
+/**
+ * Save settings to file
+ */
+function saveSettings() {
+  try {
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+    console.log('💾 Settings saved:', settings);
+  } catch (error) {
+    console.error('❌ Error saving settings:', error);
+  }
+}
 
 // ============================================================================
 // WINDOW CREATION FUNCTIONS
@@ -39,29 +83,31 @@ postureCountdown = settings.postureInterval * 60;
 
 /**
  * Create the settings window
- * This is where users can configure the app
  */
 function createSettingsWindow() {
   settingsWindow = new BrowserWindow({
     width: 900,
-    height: 700,
+    height: 750,
     minWidth: 800,
-    minHeight: 600,
+    minHeight: 650,
     title: 'LookAway - Settings',
     backgroundColor: '#1a1a2e',
-    show: false, // Don't show immediately
+    show: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     },
-    titleBarStyle: 'hiddenInset', // macOS style
-    trafficLightPosition: { x: 15, y: 15 } // macOS traffic lights position
+    titleBarStyle: 'hiddenInset',
+    trafficLightPosition: { x: 15, y: 15 }
   });
 
-  // Load the settings HTML file
   settingsWindow.loadFile(path.join(__dirname, '../renderer/windows/settings.html'));
 
-  // Handle window close (minimize to tray instead of quitting)
+  // Send settings to window when loaded
+  settingsWindow.webContents.on('did-finish-load', () => {
+    settingsWindow.webContents.send('load-settings', settings);
+  });
+
   settingsWindow.on('close', (event) => {
     if (!isQuitting) {
       event.preventDefault();
@@ -69,15 +115,14 @@ function createSettingsWindow() {
     }
   });
 
-  // Clean up when window is destroyed
   settingsWindow.on('closed', () => {
     settingsWindow = null;
   });
 }
 
 /**
- * Create full-screen overlay window
- * @param {string} type - 'eye-rest' or 'posture'
+ * Create overlay window with blur background
+ * @param {string} type - 'eye-rest', 'posture', or 'work-break'
  * @param {number} duration - How long to show overlay (seconds)
  */
 function createOverlayWindow(type, duration) {
@@ -86,20 +131,35 @@ function createOverlayWindow(type, duration) {
     overlayWindow.close();
   }
 
+  // Get primary display size
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.workAreaSize;
+
   overlayWindow = new BrowserWindow({
-    fullscreen: true,
+    width: width,
+    height: height,
+    x: 0,
+    y: 0,
     frame: false,
+    transparent: true,
     alwaysOnTop: true,
     skipTaskbar: true,
     resizable: false,
+    hasShadow: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     }
   });
 
-  // Load the appropriate overlay HTML
-  const overlayFile = type === 'eye-rest' ? 'eye-rest.html' : 'posture.html';
+  // Determine which overlay to load
+  let overlayFile;
+  if (type === 'work-break') {
+    overlayFile = 'work-break.html';
+  } else {
+    overlayFile = type === 'eye-rest' ? 'eye-rest.html' : 'posture.html';
+  }
+
   overlayWindow.loadFile(path.join(__dirname, '../renderer/overlays', overlayFile));
 
   // Send countdown duration to overlay
@@ -107,7 +167,6 @@ function createOverlayWindow(type, duration) {
     overlayWindow.webContents.send('start-countdown', duration);
   });
 
-  // Clean up when closed
   overlayWindow.on('closed', () => {
     overlayWindow = null;
   });
@@ -121,30 +180,22 @@ function createOverlayWindow(type, duration) {
  * Create system tray icon with menu
  */
 function createTray() {
-  // Create tray icon
-  // You can replace this with a custom icon file
   const iconPath = path.join(__dirname, '../../assets/icons/trayTemplate.png');
   let trayIcon;
 
   try {
     trayIcon = nativeImage.createFromPath(iconPath);
-    // Resize for menubar
     trayIcon = trayIcon.resize({ width: 18, height: 18 });
   } catch (e) {
-    // Fallback: create a simple icon
     trayIcon = nativeImage.createEmpty();
   }
 
   tray = new Tray(trayIcon);
-  
-  // Set tooltip
   tray.setToolTip('LookAway - Wellness Reminders');
 
-  // Update menu and title
   updateTrayMenu();
   updateTrayTitle();
 
-  // Click tray icon to show settings
   tray.on('click', () => {
     if (settingsWindow) {
       settingsWindow.show();
@@ -157,16 +208,26 @@ function createTray() {
  * Update tray context menu
  */
 function updateTrayMenu() {
-  const contextMenu = Menu.buildFromTemplate([
+  const menuItems = [
     {
       label: `Eye Rest: ${formatTime(eyeCountdown)}`,
-      enabled: false,
-      icon: nativeImage.createEmpty()
+      enabled: false
     },
     {
       label: `Posture: ${formatTime(postureCountdown)}`,
       enabled: false
-    },
+    }
+  ];
+
+  // Add work timer if enabled
+  if (settings.workInterval > 0) {
+    menuItems.push({
+      label: `Work Focus: ${formatTime(workCountdown)}`,
+      enabled: false
+    });
+  }
+
+  menuItems.push(
     { type: 'separator' },
     {
       label: isRunning ? '⏸️ Pause' : '▶️ Resume',
@@ -193,18 +254,17 @@ function updateTrayMenu() {
         app.quit();
       }
     }
-  ]);
+  );
 
+  const contextMenu = Menu.buildFromTemplate(menuItems);
   tray.setContextMenu(contextMenu);
 }
 
 /**
  * Update menubar title with countdown
- * This shows the countdown in macOS menubar
  */
 function updateTrayTitle() {
   if (process.platform === 'darwin' && tray) {
-    // Show the shorter countdown in menubar
     const nextReminder = Math.min(eyeCountdown, postureCountdown);
     tray.setTitle(` ${formatTime(nextReminder)}`);
   }
@@ -215,32 +275,39 @@ function updateTrayTitle() {
 // ============================================================================
 
 /**
- * Start the main timer that counts down and triggers reminders
+ * Start the main timer
  */
 function startMainTimer() {
   setInterval(() => {
-    // Don't count down if paused or overlay is showing
     if (!isRunning || overlayWindow) return;
 
-    // Countdown eye rest timer
+    // Eye rest countdown
     eyeCountdown--;
     if (eyeCountdown <= 0) {
       triggerEyeRest();
-      eyeCountdown = settings.eyeRestInterval * 60; // Reset
+      eyeCountdown = settings.eyeRestInterval * 60;
     }
 
-    // Countdown posture timer
+    // Posture countdown
     postureCountdown--;
     if (postureCountdown <= 0) {
       triggerPostureCheck();
-      postureCountdown = settings.postureInterval * 60; // Reset
+      postureCountdown = settings.postureInterval * 60;
     }
 
-    // Update UI
+    // Work focus countdown (if enabled)
+    if (settings.workInterval > 0) {
+      workCountdown--;
+      if (workCountdown <= 0) {
+        triggerWorkBreak();
+        workCountdown = settings.workInterval * 60;
+      }
+    }
+
     updateTrayTitle();
     updateTrayMenu();
     sendTimerUpdate();
-  }, 1000); // Run every second
+  }, 1000);
 }
 
 /**
@@ -248,11 +315,7 @@ function startMainTimer() {
  */
 function triggerEyeRest() {
   console.log('⏰ Eye rest time!');
-  
-  if (settings.soundEnabled) {
-    playNotificationSound();
-  }
-  
+  if (settings.soundEnabled) playNotificationSound();
   createOverlayWindow('eye-rest', settings.eyeRestDuration);
 }
 
@@ -261,29 +324,34 @@ function triggerEyeRest() {
  */
 function triggerPostureCheck() {
   console.log('⏰ Posture check time!');
-  
-  if (settings.soundEnabled) {
-    playNotificationSound();
-  }
-  
+  if (settings.soundEnabled) playNotificationSound();
   createOverlayWindow('posture', settings.postureDuration);
+}
+
+/**
+ * Trigger work break
+ */
+function triggerWorkBreak() {
+  console.log('⏰ Work break time!');
+  
+  // Random duration between min and max
+  const min = settings.workBreakMin;
+  const max = settings.workBreakMax;
+  const duration = Math.floor(Math.random() * (max - min + 1)) + min;
+  
+  if (settings.soundEnabled) playNotificationSound();
+  createOverlayWindow('work-break', duration);
 }
 
 /**
  * Play notification sound
  */
 function playNotificationSound() {
-  // Sound is handled in renderer process
-  // Just send notification to system
-  if (process.platform === 'darwin') {
-    // macOS notification sound
-    const { shell } = require('electron');
-    // You can add native macOS sound here if needed
-  }
+  // Sound handled in renderer
 }
 
 // ============================================================================
-// IPC COMMUNICATION (Main ↔️ Renderer)
+// IPC COMMUNICATION
 // ============================================================================
 
 /**
@@ -294,42 +362,35 @@ function sendTimerUpdate() {
     settingsWindow.webContents.send('timer-update', {
       eye: eyeCountdown,
       posture: postureCountdown,
+      work: workCountdown,
       isRunning: isRunning
     });
   }
 }
 
 /**
- * Handle settings update from renderer
+ * Handle settings save from renderer
  */
-ipcMain.on('update-settings', (event, newSettings) => {
-  console.log('⚙️ Settings updated:', newSettings);
+ipcMain.on('save-settings', (event, newSettings) => {
+  console.log('💾 Saving settings:', newSettings);
   
-  // Update settings
-  if (newSettings.eyeRestInterval) {
-    settings.eyeRestInterval = newSettings.eyeRestInterval;
-    eyeCountdown = newSettings.eyeRestInterval * 60;
-  }
-  if (newSettings.eyeRestDuration) {
-    settings.eyeRestDuration = newSettings.eyeRestDuration;
-  }
-  if (newSettings.postureInterval) {
-    settings.postureInterval = newSettings.postureInterval;
-    postureCountdown = newSettings.postureInterval * 60;
-  }
-  if (newSettings.postureDuration) {
-    settings.postureDuration = newSettings.postureDuration;
-  }
-  if (typeof newSettings.soundEnabled !== 'undefined') {
-    settings.soundEnabled = newSettings.soundEnabled;
-  }
+  settings = { ...settings, ...newSettings };
   
+  // Reset timers with new intervals
+  eyeCountdown = settings.eyeRestInterval * 60;
+  postureCountdown = settings.postureInterval * 60;
+  workCountdown = settings.workInterval > 0 ? settings.workInterval * 60 : 0;
+  
+  saveSettings();
   updateTrayMenu();
   sendTimerUpdate();
+  
+  // Send confirmation back
+  event.reply('settings-saved', true);
 });
 
 /**
- * Handle timer toggle from renderer
+ * Handle timer toggle
  */
 ipcMain.on('toggle-timer', () => {
   isRunning = !isRunning;
@@ -352,6 +413,7 @@ ipcMain.on('close-overlay', () => {
 ipcMain.on('reset-timers', () => {
   eyeCountdown = settings.eyeRestInterval * 60;
   postureCountdown = settings.postureInterval * 60;
+  workCountdown = settings.workInterval > 0 ? settings.workInterval * 60 : 0;
   updateTrayMenu();
   sendTimerUpdate();
 });
@@ -362,8 +424,6 @@ ipcMain.on('reset-timers', () => {
 
 /**
  * Format seconds to MM:SS
- * @param {number} seconds 
- * @returns {string} Formatted time
  */
 function formatTime(seconds) {
   const mins = Math.floor(seconds / 60);
@@ -375,9 +435,6 @@ function formatTime(seconds) {
 // APP LIFECYCLE
 // ============================================================================
 
-/**
- * App is ready - create everything
- */
 app.whenReady().then(() => {
   console.log('🚀 LookAway is starting...');
   
@@ -385,7 +442,6 @@ app.whenReady().then(() => {
   createTray();
   startMainTimer();
   
-  // Show settings window on first launch (after a short delay)
   setTimeout(() => {
     if (settingsWindow) {
       settingsWindow.show();
@@ -393,21 +449,10 @@ app.whenReady().then(() => {
   }, 500);
 });
 
-/**
- * Handle all windows closed
- */
 app.on('window-all-closed', () => {
-  // Don't quit the app - keep running in background
-  // On macOS, apps typically continue running even when all windows are closed
-  if (process.platform !== 'darwin') {
-    // On Windows/Linux, you might want to quit
-    // app.quit();
-  }
+  // Don't quit - keep running in background
 });
 
-/**
- * Handle app activation (macOS)
- */
 app.on('activate', () => {
   if (settingsWindow === null) {
     createSettingsWindow();
@@ -416,15 +461,8 @@ app.on('activate', () => {
   }
 });
 
-/**
- * Handle app quit
- */
 app.on('before-quit', () => {
   isQuitting = true;
 });
-
-// ============================================================================
-// DONE! 🎉
-// ============================================================================
 
 console.log('✅ Main process loaded successfully!');
