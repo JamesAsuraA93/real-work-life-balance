@@ -11,11 +11,14 @@
       box-sizing: border-box;
     }
 
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-      background: rgba(102, 126, 234, 0.95);
-      backdrop-filter: blur(40px);
-      -webkit-backdrop-filter: blur(40px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -25,6 +28,7 @@
       overflow: hidden;
       cursor: default;
       user-select: none;
+      position: relative;
     }
 
     .blur-bg {
@@ -33,9 +37,9 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.85) 0%, rgba(118, 75, 162, 0.85) 100%);
-      backdrop-filter: blur(30px);
-      -webkit-backdrop-filter: blur(30px);
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.70) 0%, rgba(118, 75, 162, 0.70) 100%);
+      backdrop-filter: blur(50px);
+      -webkit-backdrop-filter: blur(50px);
       z-index: 1;
     }
 
@@ -44,12 +48,13 @@
       z-index: 10;
       position: relative;
       animation: fadeIn 0.4s ease-out;
+      padding: 0 40px;
     }
 
     .icon-container {
-      width: 220px;
-      height: 220px;
-      margin: 0 auto 50px;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 40px;
       background: rgba(255, 255, 255, 0.25);
       border-radius: 50%;
       display: flex;
@@ -62,7 +67,7 @@
     }
 
     .coffee-icon {
-      font-size: 90px;
+      font-size: 85px;
     }
 
     @keyframes pulse {
@@ -75,41 +80,41 @@
     }
 
     h1 {
-      font-size: 62px;
+      font-size: 56px;
       font-weight: 700;
-      margin-bottom: 24px;
-      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+      margin-bottom: 20px;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
       letter-spacing: -1px;
     }
 
     .subtitle {
-      font-size: 28px;
-      margin-bottom: 50px;
+      font-size: 26px;
+      margin-bottom: 40px;
       opacity: 0.95;
       font-weight: 400;
       line-height: 1.5;
     }
 
     .countdown {
-      font-size: 140px;
+      font-size: 120px;
       font-weight: 700;
-      margin-bottom: 16px;
-      text-shadow: 0 6px 32px rgba(0, 0, 0, 0.3);
+      margin-bottom: 12px;
+      text-shadow: 0 6px 32px rgba(0, 0, 0, 0.4);
       font-variant-numeric: tabular-nums;
       line-height: 1;
       letter-spacing: -3px;
     }
 
     .countdown-label {
-      font-size: 22px;
+      font-size: 20px;
       opacity: 0.85;
-      margin-bottom: 50px;
+      margin-bottom: 40px;
       font-weight: 500;
     }
 
     .skip-btn {
-      padding: 18px 48px;
-      font-size: 20px;
+      padding: 16px 44px;
+      font-size: 19px;
       font-weight: 600;
       background: rgba(255, 255, 255, 0.25);
       border: 2px solid rgba(255, 255, 255, 0.5);
@@ -120,6 +125,8 @@
       backdrop-filter: blur(10px);
       font-family: inherit;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      position: relative;
+      z-index: 20;
     }
 
     .skip-btn:hover {
@@ -133,23 +140,24 @@
     }
 
     .suggestions {
-      position: absolute;
-      bottom: 60px;
+      position: fixed;
+      bottom: 50px;
       left: 50%;
       transform: translateX(-50%);
       text-align: center;
       opacity: 0.85;
-      font-size: 18px;
+      font-size: 17px;
       background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(20px);
-      padding: 24px 40px;
-      border-radius: 20px;
+      padding: 20px 36px;
+      border-radius: 18px;
       border: 1px solid rgba(255, 255, 255, 0.25);
       z-index: 10;
+      max-width: 90%;
     }
 
     .suggestion-item {
-      margin: 8px 0;
+      margin: 6px 0;
     }
 
     @keyframes fadeIn {
@@ -165,35 +173,42 @@
 
     .close-btn {
       position: fixed;
-      top: 30px;
-      right: 30px;
-      width: 50px;
-      height: 50px;
-      background: rgba(255, 255, 255, 0.2);
-      border: 2px solid rgba(255, 255, 255, 0.4);
+      top: 25px;
+      right: 25px;
+      width: 52px;
+      height: 52px;
+      background: rgba(255, 255, 255, 0.3);
+      border: 2px solid rgba(255, 255, 255, 0.5);
       border-radius: 50%;
       color: white;
-      font-size: 24px;
+      font-size: 26px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.3s ease;
       backdrop-filter: blur(10px);
-      z-index: 100;
+      z-index: 9999;
       font-family: inherit;
+      font-weight: 300;
+      line-height: 1;
     }
 
     .close-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.4);
       transform: scale(1.1);
+      border-color: rgba(255, 255, 255, 0.7);
+    }
+
+    .close-btn:active {
+      transform: scale(1.05);
     }
   </style>
 </head>
 <body>
   <div class="blur-bg"></div>
   
-  <button class="close-btn" onclick="skipBreak()">✕</button>
+  <button class="close-btn" onclick="skipBreak()" title="Close (Esc)">×</button>
   
   <div class="container">
     <div class="icon-container">
@@ -223,25 +238,30 @@
     const countdownEl = document.getElementById('countdown');
     
     let countdown = 60;
-    let countdownInterval;
+    let countdownInterval = null;
 
     ipcRenderer.on('start-countdown', (event, duration) => {
-      countdown = duration;
+      countdown = duration || 60;
       countdownEl.textContent = countdown;
       startCountdown();
     });
 
     function startCountdown() {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
+
       countdownInterval = setInterval(() => {
         countdown--;
         countdownEl.textContent = countdown;
 
-        if (countdown <= 5) {
+        if (countdown <= 5 && countdown > 0) {
           countdownEl.style.animation = 'pulse 0.5s ease-in-out infinite';
         }
 
         if (countdown <= 0) {
           clearInterval(countdownInterval);
+          countdownInterval = null;
           skipBreak();
         }
       }, 1000);
@@ -250,12 +270,20 @@
     function skipBreak() {
       if (countdownInterval) {
         clearInterval(countdownInterval);
+        countdownInterval = null;
       }
-      ipcRenderer.send('close-overlay');
+      
+      try {
+        ipcRenderer.send('close-overlay');
+      } catch (e) {
+        console.error('Error closing overlay:', e);
+        window.close();
+      }
     }
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        e.preventDefault();
         skipBreak();
       }
     });
@@ -279,7 +307,12 @@
       }
     }
 
-    playSound();
+    // Initialize
+    try {
+      playSound();
+    } catch (e) {
+      console.log('Sound init failed');
+    }
   </script>
 </body>
 </html>

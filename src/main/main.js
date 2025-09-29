@@ -265,8 +265,14 @@ function updateTrayMenu() {
  */
 function updateTrayTitle() {
   if (process.platform === 'darwin' && tray) {
-    const nextReminder = Math.min(eyeCountdown, postureCountdown);
-    tray.setTitle(` ${formatTime(nextReminder)}`);
+    // Show work timer if enabled, otherwise show shortest reminder time
+    let displayTime;
+    if (settings.workInterval > 0 && workCountdown > 0) {
+      displayTime = workCountdown;
+    } else {
+      displayTime = Math.min(eyeCountdown, postureCountdown);
+    }
+    tray.setTitle(` ${formatTime(displayTime)}`);
   }
 }
 
